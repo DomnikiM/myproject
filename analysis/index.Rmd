@@ -1,5 +1,5 @@
 ---
-title: "Home"
+title: "RNAseq analysis"
 site: workflowr::wflow_site
 output:
   workflowr::wflow_html:
@@ -8,4 +8,4 @@ editor_options:
   chunk_output_type: console
 ---
 
-Welcome to my research website.
+So I suppose it is here that I will start writing the things in here!

@@ -1,7 +1,7 @@
-name: myproject
+name: RNAseq
 output_dir: ../docs
 navbar:
-  title: myproject
+  title: RNAseq
   left:
   - text: The test station
     href: index.html
