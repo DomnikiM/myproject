@@ -254,7 +254,7 @@ $(document).ready(function () {
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
         <li>
-  <a href="index.html">The test station</a>
+  <a href="index.html">Project outlay</a>
 </li>
 <li>
   <a href="about.html">About</a>
@@ -336,16 +336,16 @@ This reproducible <a href="http://rmarkdown.rstudio.com">R Markdown</a> analysis
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomDomnikiMmyprojecttree66b01bfa6b0e9a4fc3d56fe18b5c21ac48c9d8f7targetblank66b01bfa"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Repository version:</strong> <a href="https://github.com/DomnikiM/myproject/tree/66b01bfa6b0e9a4fc3d56fe18b5c21ac48c9d8f7" target="_blank">66b01bf</a> </a>
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomDomnikiMmyprojecttreef030773badb5dad2dd8da3149841b432356deab1targetblankf030773a"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Repository version:</strong> <a href="https://github.com/DomnikiM/myproject/tree/f030773badb5dad2dd8da3149841b432356deab1" target="_blank">f030773</a> </a>
 </p>
 </div>
-<div id="strongRepositoryversionstrongahrefhttpsgithubcomDomnikiMmyprojecttree66b01bfa6b0e9a4fc3d56fe18b5c21ac48c9d8f7targetblank66b01bfa" class="panel-collapse collapse">
+<div id="strongRepositoryversionstrongahrefhttpsgithubcomDomnikiMmyprojecttreef030773badb5dad2dd8da3149841b432356deab1targetblankf030773a" class="panel-collapse collapse">
 <div class="panel-body">
 <p>
 Great! You are using Git for version control. Tracking code development and connecting the code version to the results is critical for reproducibility.
 </p>
 <p>
-The results in this page were generated with repository version <a href="https://github.com/DomnikiM/myproject/tree/66b01bfa6b0e9a4fc3d56fe18b5c21ac48c9d8f7" target="_blank">66b01bf</a>. See the <em>Past versions</em> tab to see a history of the changes made to the R Markdown and HTML files.
+The results in this page were generated with repository version <a href="https://github.com/DomnikiM/myproject/tree/f030773badb5dad2dd8da3149841b432356deab1" target="_blank">f030773</a>. See the <em>Past versions</em> tab to see a history of the changes made to the R Markdown and HTML files.
 </p>
 <p>
 Note that you need to be careful to ensure that all relevant files for the analysis have been committed to Git prior to generating the results (you can use <code>wflow_publish</code> or <code>wflow_git_commit</code>). workflowr only checks the R Markdown file, but you know if there are other scripts or data files that it depends on. Below is the status of the Git repository when the results were generated:
@@ -389,6 +389,40 @@ Message
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/DomnikiM/myproject/blob/f030773badb5dad2dd8da3149841b432356deab1/analysis/index.Rmd" target="_blank">f030773</a>
+</td>
+<td>
+DomnikiM
+</td>
+<td>
+2021-10-07
+</td>
+<td>
+Publish extra files for myproject
+</td>
+</tr>
+<tr>
+<td>
+html
+</td>
+<td>
+<a href="https://rawcdn.githack.com/DomnikiM/myproject/cba30b348b53a540ba10c31870b1b9453c802a87/docs/index.html" target="_blank">cba30b3</a>
+</td>
+<td>
+DomnikiM
+</td>
+<td>
+2021-10-07
+</td>
+<td>
+Build site.
+</td>
+</tr>
 <tr>
 <td>
 Rmd
@@ -498,7 +532,35 @@ Start workflowr project.
 </div>
 </div>
 </div>
-<p>So I suppose it is here that I will start writing the things in here!</p>
+<p>So the task was to be able to set up this page</p>
+<p><strong>Tasks for the project:</strong></p>
+<ul>
+<li>download the data</li>
+<li>allign the RNA reads to the transcriptome</li>
+<li>quantify expression using <a href="https://salmon.readthedocs.io/en/latest/salmon.html">Salmon</a></li>
+<li>then use DEseq to standardize the data</li>
+</ul>
+<div id="download-the-data" class="section level2">
+<h2>Download the data</h2>
+<p>I use the script</p>
+<pre><code>SBATCH --ntasks=8 # 1 core(CPU)
+SBATCH --nodes=1 # Use 1 node
+SBATCH --mem=3G # Default memory per CPU is 3GB
+SBATCH --partition=smallmem
+#SBATCH --mail-user=domniki.manousi@nmbu.no ##Email me when job is done
+#SBATCH --mail-type=END,FAIL
+
+#loop to generate the md5 for the received files 
+while read p; do
+path=${p##*/}
+base=${path%.*}
+/usr/bin/md5sum $p &gt; md5-out/md5.$base.txt
+done &lt; zipped.files.list
+
+#cocatanate all and remove the file-paths
+cat md5-out/md5.*.txt | awk -F&quot; +|/&quot; &#39;{print $1,$NF}&#39; &gt; downloaded.md5.txt
+</code></pre>
+</div>
 
 
 <!-- Adjust MathJax settings so that all math formulae are shown using
