@@ -3,7 +3,7 @@ output_dir: ../docs
 navbar:
   title: myproject
   left:
-  - text: Home
+  - text: The test station
     href: index.html
   - text: About
     href: about.html
