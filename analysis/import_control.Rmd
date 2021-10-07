@@ -1,0 +1,123 @@
+---
+title: "Import control"
+author: "Dom"
+date: "10/6/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(data.table)
+```
+
+Pipeline for checking the MD5 summary of imported RNAseq data from Novogene
+**pipleline tailored to the certain type of import**
+ 
+The data for each sample batch from Novogene, are provided in the form of zipped portions. Depending on the ammount of data produced per batch, different amount of zipped files are provided. 
+Each batch contains: 
+
+* The .zip files containing the sample files and meta-data 
+* An excel sheet describing the expected data-size of each received sample
+* An MD5.txt file describing the expected data-size of each zipped portion
+* A readme html file
+
+Since the provider includes the MD5 report for the size of each zipped file, I decided to run this check. Will use md5sum to generate the md5 codes for the received data and compare between the generated and reported sizes to make sure that everything is downloaded succesfully. 
+
+## MD5 file generation 
+
+I created an output directory for the generated md5 files:
+
+```
+mkdir md5-out
+```
+
+Then collected all MD5.txt reports accompanying the zipped data
+
+```
+cat */MD5.txt | grep "zip" > reported.md5.txt
+```
+
+Finally I listed all the zipped files I received. 
+
+```
+ls */*.zip > zipped.files.list
+```
+
+Finally I used the following script to generate MD5 files for every zipped file I received and concatanated them into a list
+
+```
+SBATCH --ntasks=8 # 1 core(CPU)
+SBATCH --nodes=1 # Use 1 node
+SBATCH --mem=3G # Default memory per CPU is 3GB
+SBATCH --partition=smallmem
+#SBATCH --mail-user=domniki.manousi@nmbu.no ##Email me when job is done
+#SBATCH --mail-type=END,FAIL
+
+#loop to generate the md5 for the received files 
+while read p; do
+path=${p##*/}
+base=${path%.*}
+/usr/bin/md5sum $p > md5-out/md5.$base.txt
+done < zipped.files.list
+
+#cocatanate all and remove the file-paths
+cat md5-out/md5.*.txt | awk -F" +|/" '{print $1,$NF}' > downloaded.md5.txt
+
+```
+
+
+## MD5 comparison
+
+Comparison will be executed in R by comparing the list of generated md5 files after download and the md5 report that was received with each batch.
+
+```
+
+expected<-fread("/net/fs-1/SandveLab/rawdata/synchrosmolt_3000_gill_transcriptomes/reported.md5.txt",header=F) %>% rename_all(~c("md5","file"))
+
+#find the double sent files 
+dupes<-expected[duplicated(expected$file)] %>% select(file)
+paste0("the file(s) ",dupes," have been downloaded more than one time.")
+
+downloaded<-fread("/net/fs-1/SandveLab/rawdata/synchrosmolt_3000_gill_transcriptomes/downloaded.md5.txt",header=F) %>% rename_all(~c("md5","file"))
+
+complete<-inner_join(expected,downloaded,by=c('md5','file')) %>% select(file)
+paste0("the file(s) ",complete," have been downloaded succesfully.")
+
+incomplete<-inner_join(expected,downloaded,by="file") %>% filter(md5.x != md5.y) %>% pull(file)
+paste0(length(incomplete)," file(s) are not completely downloaded.")
+
+#if there are any missing or incompletely downloaded files print the names 
+if (length(incomplete) != 0){
+  paste0("incopletely downloaded:", ambiguous)
+}
+
+#testing the probability of having a missing file
+missing<-anti_join(expected,downloaded,by="file") %>% pull(file)
+paste0(length(missing)," file(s) are not downloaded.")
+
+#if there are any missing downloaded files print the names 
+if (length(missing) != 0){
+  print("Not downloaded:")
+  print(missing$file)
+}
+
+```
+
+
+
+
+To test the possibility of a missing file
+
+```
+expected<-bind_rows(expected,c(md5="gfsdcae12412kghjavsdckasv",file="XTHIS-IS-A-NOT-DOWNLOADED-FILE"))
+
+missing<-anti_join(expected,downloaded,by="file") #%>% filter(md5.x != md5.y) %>% pull(file)
+paste0(nrow(missing)," file(s) are not downloaded.")
+
+#if there are any missing downloaded files print the names 
+if (length(missing) != 0){
+  print("Not downloaded:")
+  print(missing$file)
+}
+```
