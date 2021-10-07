@@ -8,4 +8,39 @@ editor_options:
   chunk_output_type: console
 ---
 
-So I suppose it is here that I will start writing the things in here!
+So the task was to be able to set up this page
+
+**Tasks for the project:**
+
+* download the data
+* allign the RNA reads to the transcriptome
+* quantify expression using [Salmon](https://salmon.readthedocs.io/en/latest/salmon.html)
+* then use DEseq to standardize the data 
+
+## Download the data
+
+I use the script
+
+```
+SBATCH --ntasks=8 # 1 core(CPU)
+SBATCH --nodes=1 # Use 1 node
+SBATCH --mem=3G # Default memory per CPU is 3GB
+SBATCH --partition=smallmem
+#SBATCH --mail-user=domniki.manousi@nmbu.no ##Email me when job is done
+#SBATCH --mail-type=END,FAIL
+
+#loop to generate the md5 for the received files 
+while read p; do
+path=${p##*/}
+base=${path%.*}
+/usr/bin/md5sum $p > md5-out/md5.$base.txt
+done < zipped.files.list
+
+#cocatanate all and remove the file-paths
+cat md5-out/md5.*.txt | awk -F" +|/" '{print $1,$NF}' > downloaded.md5.txt
+
+```
+
+
+
+ 
